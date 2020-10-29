@@ -123,7 +123,7 @@ class XlsxModelExporter(BaseXlsxExporter, BaseModelExporter):
 
     def put_value(self, value, row, col):
         value = value or self.default_value
-        self.ws.cell(row=row, column=col, value=value)
+        self.ws.cell(row=row, column=col, value=str(value))
 
 
 class XlsxChunkModelExporter(XlsxModelExporter):
