@@ -75,3 +75,4 @@ venv.bak/
 /node_modules
 /bower_components
 .DS_Store
+_django_legacy/
