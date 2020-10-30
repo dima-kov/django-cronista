@@ -45,6 +45,10 @@ class BaseModelExporter(BaseExporter, ModelFieldMixin):
         self.fields = fields or self.fields
         self.init_field_exporters()
 
+    def get_queryset(self):
+        """Hook to annotate queryset"""
+        return self.qs
+
     def init_field_exporters(self):
         self.field_exporters: [ObjectExporter] = list()
         non_relation_fields = []

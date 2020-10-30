@@ -131,9 +131,10 @@ class XlsxChunkModelExporter(XlsxModelExporter):
 
     def export_body(self):
         row = self.get_data_start_row()
-        all_count = self.qs.count()
+        qs = self.get_queryset()
+        all_count = qs.count()
 
         for chunk in range(0, all_count, self.pagination_chunk):
-            chunk_qs = self.qs[chunk:chunk + self.pagination_chunk]
+            chunk_qs = qs[chunk:chunk + self.pagination_chunk]
             row = self.export_qs(chunk_qs, row)
             logger.info(f'Progress: {chunk} {all_count}')
