@@ -8,6 +8,7 @@ from openpyxl.writer.excel import save_virtual_workbook
 
 from cronista.base import BaseModelExporter
 from cronista.base.base import BaseExporter
+from cronista.base.fields import ObjectExporter
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +51,7 @@ class XlsxModelExporter(BaseXlsxExporter, BaseModelExporter):
         super().__init__(*args, **kwargs)
         self.define_start_cols()
 
-    def field_exporter_merge_header(self, field_exporter, row):
+    def field_exporter_merge_header(self, field_exporter: ObjectExporter, row):
         self.ws.merge_cells(
             start_row=row, start_column=field_exporter.start_col,
             end_row=row, end_column=field_exporter.get_end_col()
@@ -78,7 +79,7 @@ class XlsxModelExporter(BaseXlsxExporter, BaseModelExporter):
             for _ in range(field_exporter.max_num):
                 col = self.field_exporter_header(field_exporter, row + 1, col)
 
-    def field_exporter_data(self, obj, field_exporter, row, col):
+    def field_exporter_data(self, obj, field_exporter: ObjectExporter, row, col):
         for data in field_exporter.get_data_set(obj):
             self.put_value(data, row, col)
             col += 1
