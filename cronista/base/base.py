@@ -3,7 +3,7 @@ import abc
 from django.db import models
 
 from cronista.base.fields import ObjectExporter
-from cronista.base.mixins import ModelFieldMixin
+from cronista.base.mixins import ModelMixin
 
 
 class BaseExporter(abc.ABC):
@@ -18,7 +18,7 @@ class BaseExporter(abc.ABC):
         raise NotImplementedError()
 
 
-class ModelFieldsExporter(ModelFieldMixin):
+class ModelFieldsExporter(ModelMixin):
     fields = ()
     nested_exporters = {}
 

@@ -1,7 +1,7 @@
-from cronista.base.mixins import ModelFieldMixin
+from cronista.base.mixins import ModelMixin
 
 
-class ObjectExporter(ModelFieldMixin):
+class ObjectExporter(ModelMixin):
     """
     A class that describes export data for one object
     :parameter name

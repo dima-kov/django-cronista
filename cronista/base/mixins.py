@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class ModelFieldMixin:
+class ModelMixin:
     """
     Mixin for setting model and dynamically getting field details
     """
