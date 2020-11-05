@@ -26,7 +26,7 @@ class ObjectExporter(ModelFieldMixin):
         return self.start_col + self.get_size() * self.max_num - 1
 
     def get_fields_verbose_names(self):
-        return [self.get_field_verbose_name(f) for f in self.fields]
+        return [self.get_model_field_verbose_name(f) for f in self.fields]
 
     def get_data_set(self, obj):
         for f in self.fields:

@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 
-from cronista.base import BaseModelExporter
+from cronista.base import BaseQuerySetExporter
 from cronista.base.base import BaseExporter
 from cronista.base.fields import ObjectExporter
 
@@ -42,7 +42,7 @@ class BaseXlsxExporter(BaseExporter):
         pass
 
 
-class XlsxModelExporter(BaseXlsxExporter, BaseModelExporter):
+class XlsxModelExporter(BaseXlsxExporter, BaseQuerySetExporter):
     header_row = 1
     header_col = 1
     default_value = _('Інформація відсутня')
@@ -66,7 +66,7 @@ class XlsxModelExporter(BaseXlsxExporter, BaseModelExporter):
     def header(self):
         row = self.header_row
         col = self.header_col
-        for field_exporter in self.field_exporters:
+        for field_exporter in self.model_exporters:
             if not field_exporter.multiple:
                 # header for fk, single object
                 col = self.field_exporter_header(field_exporter, row, col)
@@ -75,7 +75,7 @@ class XlsxModelExporter(BaseXlsxExporter, BaseModelExporter):
             # header for multiple: merge header_row, place related_field name
             # and place related model fields in next row
             self.field_exporter_merge_header(field_exporter, row)
-            self.put_value(self.get_field_verbose_name(field_exporter.name), row, col)
+            self.put_value(self.get_model_field_verbose_name(field_exporter.name), row, col)
             for _ in range(field_exporter.max_num):
                 col = self.field_exporter_header(field_exporter, row + 1, col)
 
@@ -104,7 +104,7 @@ class XlsxModelExporter(BaseXlsxExporter, BaseModelExporter):
     def export_obj(self, obj, row):
         """Performs export of one object"""
         col = 1
-        for field_exporter in self.field_exporters:
+        for field_exporter in self.model_exporters:
             if field_exporter.multiple:
                 # Fields with multiple
                 field = getattr(obj, field_exporter.name)

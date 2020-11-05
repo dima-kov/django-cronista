@@ -1,5 +1,5 @@
-from cronista.base.base import BaseModelExporter
+from cronista.base.base import BaseQuerySetExporter
 
 __all__ = [
-    'BaseModelExporter'
+    'BaseQuerySetExporter'
 ]

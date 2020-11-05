@@ -7,12 +7,12 @@ class ModelFieldMixin:
     """
     model: models.Model = None
 
-    def get_field_verbose_name(self, name):
-        field = self.get_field(name)
+    def get_model_field_verbose_name(self, name):
+        field = self.get_model_field(name)
         if isinstance(field, models.ManyToOneRel):
             return field.related_model._meta.verbose_name_plural
 
         return field.verbose_name
 
-    def get_field(self, name):
+    def get_model_field(self, name):
         return self.model._meta.get_field(name)
