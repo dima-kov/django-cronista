@@ -51,7 +51,7 @@ class XlsxWriter(ExportWriter):
 class BaseXlsxExporter(BaseExporter):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.wb = Workbook(write_only=True)
+        self.wb = Workbook()
         self.ws = self.wb.active
 
     def as_http_response(self, filename='export'):
