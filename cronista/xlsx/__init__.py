@@ -1,6 +1,5 @@
-from cronista.xlsx.exporter import XlsxChunkModelExporter, XlsxModelExporter
+from cronista.xlsx.writer import XlsxModelExporter
 
 __all__ = [
     'XlsxModelExporter',
-    'XlsxChunkModelExporter',
 ]
