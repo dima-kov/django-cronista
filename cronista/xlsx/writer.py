@@ -15,6 +15,8 @@ class XlsxWriter(ExportWriter):
 
     def __init__(self, ws):
         self.ws = ws
+        self._max_col = 0
+        self._max_row = 0
 
     def write(self, x, y, value):
         value = value or self.default_value
@@ -22,8 +24,26 @@ class XlsxWriter(ExportWriter):
 
     def move_left(self, x_from, steps):
         print('move!!!', x_from, steps)
-        c = CellRange(min_col=x_from, min_row=3, max_col=40, max_row=500)
-        self.ws.move_range(c, rows=0, cols=4)
+        c = CellRange(min_col=x_from, min_row=3, max_col=self.max_col, max_row=self.max_row)
+        self.ws.move_range(c, rows=0, cols=steps)
+
+    @property
+    def max_col(self):
+        return self._max_col
+
+    @max_col.setter
+    def max_col(self, value):
+        if value > self._max_col:
+            self._max_col = value
+
+    @property
+    def max_row(self):
+        return self._max_row
+
+    @max_row.setter
+    def max_row(self, value):
+        if value > self._max_row:
+            self._max_row = value
 
 
 class BaseXlsxExporter(BaseExporter):
