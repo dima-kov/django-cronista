@@ -21,6 +21,8 @@ class XlsxWriter(ExportWriter):
     def write(self, x, y, value):
         value = value or self.default_value
         self.ws.cell(row=y, column=x, value=str(value))
+        self.max_col = x
+        self.max_row = y
 
     def move_left(self, x_from, steps):
         print('move!!!', x_from, steps)
