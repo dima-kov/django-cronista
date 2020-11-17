@@ -90,6 +90,7 @@ class ModelExporter(ModelMixin):
                     return_shift += shift_col
             elif self.state == self.VERTICAL:
                 row += 1
+                col = self._col_start
 
         return return_shift
 
