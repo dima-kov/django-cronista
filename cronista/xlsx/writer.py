@@ -26,7 +26,7 @@ class XlsxWriter(ExportWriter):
 
     def move_left(self, x_from, steps):
         print('move!!!', x_from, steps)
-        c = CellRange(min_col=x_from, min_row=3, max_col=self.max_col, max_row=self.max_row)
+        c = CellRange(min_col=x_from, min_row=3, max_col=self.max_col + 100, max_row=self.max_row)
         self.ws.move_range(c, rows=0, cols=steps)
 
     @property
