@@ -1,7 +1,5 @@
-import io
 from urllib.parse import quote
 
-import xlsxwriter
 from django.http import HttpResponse
 from openpyxl import Workbook
 from openpyxl.worksheet.cell_range import CellRange
@@ -50,37 +48,7 @@ class XlsxWriter(ExportWriter):
             self._max_row = value
 
 
-class BaseXlsxWriterExporter(BaseExporter):
-    """
-    XlsxWriter implementation
-    """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.buffer = io.BytesIO()
-        self.wb = xlsxwriter.Workbook(self.buffer)
-        self.ws = self.wb.add_worksheet()
-
-    def as_http_response(self, filename='export'):
-        self.buffer.seek(0)
-        filename = quote('{}.xlsx'.format(filename))
-        response = HttpResponse(
-            self.buffer,
-            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
-        response['Content-Disposition'] = 'attachment; filename={}'.format(filename)
-        return response
-
-    def as_file(self, filename='export'):
-        with open(f'{filename}.xlsx', "wb") as f:
-            f.write(self.buffer.getbuffer())
-
-
-class BaseOpenPyXlExporter(BaseExporter):
-    """
-    OpenPyXl implementation
-    """
-
+class BaseXlsxExporter(BaseExporter):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.wb = Workbook()
@@ -98,8 +66,14 @@ class BaseOpenPyXlExporter(BaseExporter):
     def as_file(self, filename='export'):
         self.wb.save(filename)
 
+    def header(self):
+        pass
 
-class XlsxModelExporter(ModelExporter, BaseXlsxWriterExporter):
+    def export_body(self):
+        pass
+
+
+class XlsxModelExporter(ModelExporter, BaseXlsxExporter):
 
     def __init__(self):
         super().__init__()

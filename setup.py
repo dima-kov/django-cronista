@@ -35,7 +35,6 @@ setup(
     ],
     install_requires=[
         'openpyxl',
-        'django>=2.0',
-        'XlsxWriter>1',
+        'django>=2.0'
     ]
 )
