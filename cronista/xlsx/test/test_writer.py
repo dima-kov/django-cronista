@@ -1,15 +1,13 @@
 from unittest import TestCase
 
-from openpyxl import Workbook
-
-from cronista.xlsx.writer import XlsxWriter
+from cronista.xlsx.writer import OpenPyXlWriter
 
 
 class WriterTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.writer: XlsxWriter = XlsxWriter()
+        cls.writer: OpenPyXlWriter = OpenPyXlWriter()
 
     def test_writer_max_col_row(self):
         self.assertEqual(self.writer.max_col, 0)

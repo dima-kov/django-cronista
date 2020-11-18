@@ -3,7 +3,7 @@ from typing import Dict
 from django.db import models
 from django.db.models import QuerySet, Model
 
-from cronista.base import BaseExporter, ExporterWriter
+from cronista.base import ExporterWriter
 
 
 class ModelMixin:
