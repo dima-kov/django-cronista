@@ -9,8 +9,7 @@ class WriterTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        wb = Workbook()
-        cls.writer: XlsxWriter = XlsxWriter(wb.active)
+        cls.writer: XlsxWriter = XlsxWriter()
 
     def test_writer_max_col_row(self):
         self.assertEqual(self.writer.max_col, 0)

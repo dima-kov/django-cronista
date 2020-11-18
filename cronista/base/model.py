@@ -3,7 +3,7 @@ from typing import Dict
 from django.db import models
 from django.db.models import QuerySet, Model
 
-from cronista.base.writer import ExportWriter
+from cronista.base import BaseExporter, ExporterWriter
 
 
 class ModelMixin:
@@ -79,10 +79,10 @@ class ModelExporter(ModelMixin):
         """TODO: return dynamically depending on headers rows count"""
         return 3
 
-    def export(self, qo: [QuerySet, Model], export_writer: ExportWriter, row=None):
+    def export(self, qo: [QuerySet, Model], export_writer: ExporterWriter, row=None):
         """
         :param qo: queryset, list or object
-        :param export_writer: object that implements ExportWriter interface and allows to write
+        :param export_writer: object that implements ExporterWriter interface and allows to write
         :param row:
         """
         return_shift = 0
@@ -110,7 +110,7 @@ class ModelExporter(ModelMixin):
 
         return return_shift
 
-    def export_obj(self, obj, export_writer: ExportWriter, start_col, row):
+    def export_obj(self, obj, export_writer: ExporterWriter, start_col, row):
         col = start_col
         for field in self.fields:
             value = getattr(obj, field)
@@ -135,7 +135,7 @@ class ModelExporter(ModelMixin):
 
         return col, return_shift
 
-    def _export_nested(self, field_name: str, obj, exporter: 'ModelExporter', export_writer: ExportWriter, col: int,
+    def _export_nested(self, field_name: str, obj, exporter: 'ModelExporter', export_writer: ExporterWriter, col: int,
                        row: int):
         model_field = self.get_model_field(field_name)
         is_m2o = isinstance(model_field, models.ManyToOneRel)  # related fks
