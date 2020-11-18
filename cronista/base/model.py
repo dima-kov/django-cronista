@@ -3,8 +3,24 @@ from typing import Dict
 from django.db import models
 from django.db.models import QuerySet, Model
 
-from cronista.base.mixins import ModelMixin
 from cronista.base.writer import ExportWriter
+
+
+class ModelMixin:
+    """
+    Mixin for setting model and dynamically getting field details
+    """
+    model: models.Model = None
+
+    def get_model_field_verbose_name(self, name):
+        field = self.get_model_field(name)
+        if isinstance(field, models.ManyToOneRel):
+            return field.related_model._meta.verbose_name_plural
+
+        return field.verbose_name
+
+    def get_model_field(self, name):
+        return self.model._meta.get_field(name)
 
 
 class ModelExporter(ModelMixin):
@@ -47,10 +63,10 @@ class ModelExporter(ModelMixin):
     #     """
     #     return self.get_static_size() * self.get_number()
     #     # size = len(self.fields) * self.get_number()
-        # for exporter in self.nested_exporters.values():
-        #     size += exporter.get_size() * exporter.get_number()()`
-        #
-        # return size
+    # for exporter in self.nested_exporters.values():
+    #     size += exporter.get_size() * exporter.get_number()()`
+    #
+    # return size
 
     def set_start_end(self, col_start=1):
         """
