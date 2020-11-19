@@ -23,6 +23,27 @@ class ModelMixin:
         return self.model._meta.get_field(name)
 
 
+class Shift(object):
+    def __init__(self, row=0, col=0):
+        self.row = row
+        self.col = col
+
+    def increase_row(self, value):
+        self.row += value
+
+    def increase_col(self, value):
+        self.col += value
+
+    def __add__(self, other: 'Shift'):
+        if not isinstance(other, Shift):
+            raise TypeError(f'Shift other ({other}) should be instance of Shift')
+
+        return Shift(
+            row=other.row + self.row,
+            col=other.col + self.col,
+        )
+
+
 class ModelExporter(ModelMixin):
     HORIZONTAL = 1
     VERTICAL = 2
@@ -85,7 +106,7 @@ class ModelExporter(ModelMixin):
         :param export_writer: object that implements ExporterWriter interface and allows to write
         :param row:
         """
-        return_shift = 0
+        return_shift = Shift()
         row = row or self.get_start_row()
         col = self._col_start
         objects_count = len(qo)
@@ -94,6 +115,9 @@ class ModelExporter(ModelMixin):
             i += 1
             print('self.export_obj', f'start_col={col}, row={row}', type(obj))
             col, obj_shift = self.export_obj(obj, export_writer, start_col=col, row=row)
+            row += obj_shift.row
+            # obj_shift.row = 0
+
             return_shift += obj_shift
 
             is_not_last_object = objects_count != i
@@ -103,10 +127,13 @@ class ModelExporter(ModelMixin):
                     export_writer.move_left(self._col_end + 1, shift_col)
                     self.increase_end_col(shift_col)
                     self._number += 1
-                    return_shift += shift_col
+                    return_shift.increase_col(shift_col)
             elif self.state == self.VERTICAL:
-                row += 1
                 col = self._col_start
+                return_shift.increase_row(1)
+
+            row += return_shift.row
+            return_shift.row = 0
 
         return return_shift
 
@@ -117,13 +144,13 @@ class ModelExporter(ModelMixin):
             export_writer.write(x=col, y=row, value=value)
             col += 1
 
-        return_shift = 0
-        shift_col = 0
+        return_shift = Shift()
+        shift = Shift()
         for name, nested_exporter in self.nested_exporters.items():
-            if shift_col != 0:
-                nested_exporter.increase_end_col(shift_col)
+            if shift.col != 0:
+                nested_exporter.increase_end_col(shift.col)
 
-            col, shift_col = self._export_nested(
+            col, shift = self._export_nested(
                 field_name=name,
                 obj=obj,
                 exporter=nested_exporter,
@@ -131,7 +158,7 @@ class ModelExporter(ModelMixin):
                 col=col,
                 row=row
             )
-            return_shift += shift_col
+            return_shift += shift
 
         return col, return_shift
 
@@ -152,8 +179,8 @@ class ModelExporter(ModelMixin):
             raise ValueError(f'Field {field_name} of type {type(model_field)} is '
                              f'not supported by exporter {exporter.__class__.__name__}')
         exporter.set_start_end(col_start=col)
-        shift_col = exporter.export(qo=data, export_writer=export_writer, row=row)
-        return col + exporter.get_size(), shift_col
+        shift = exporter.export(qo=data, export_writer=export_writer, row=row)
+        return col + exporter.get_size(), shift
 
     def increase_end_col(self, shift_col):
         """TODO: name"""
