@@ -28,6 +28,12 @@ class Shift(object):
         self.row = row
         self.col = col
 
+    def __str__(self):
+        return f'<Shift row={self.row}, col={self.col}>'
+
+    def __repr__(self):
+        return self.__str__()
+
     def increase_row(self, value):
         self.row += value
 
@@ -74,7 +80,7 @@ class ModelExporter(ModelMixin):
         """
         size = len(self.fields) * self.get_number()
         for exporter in self.nested_exporters.values():
-            size += exporter.get_size() * exporter.get_size()
+            size += exporter.get_size()
 
         return size
 
@@ -115,9 +121,6 @@ class ModelExporter(ModelMixin):
             i += 1
             print('self.export_obj', f'start_col={col}, row={row}', type(obj))
             col, obj_shift = self.export_obj(obj, export_writer, start_col=col, row=row)
-            row += obj_shift.row
-            # obj_shift.row = 0
-
             return_shift += obj_shift
 
             is_not_last_object = objects_count != i
@@ -133,7 +136,6 @@ class ModelExporter(ModelMixin):
                 return_shift.increase_row(1)
 
             row += return_shift.row
-            return_shift.row = 0
 
         return return_shift
 
@@ -158,6 +160,7 @@ class ModelExporter(ModelMixin):
                 col=col,
                 row=row
             )
+            print(f'Increase shift: {shift}, col={col}')
             return_shift += shift
 
         return col, return_shift
@@ -180,6 +183,7 @@ class ModelExporter(ModelMixin):
                              f'not supported by exporter {exporter.__class__.__name__}')
         exporter.set_start_end(col_start=col)
         shift = exporter.export(qo=data, export_writer=export_writer, row=row)
+        print(f'Done nested: {col}, size= {exporter.get_size()}')
         return col + exporter.get_size(), shift
 
     def increase_end_col(self, shift_col):
