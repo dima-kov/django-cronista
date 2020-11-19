@@ -1,3 +1,4 @@
+from collections import Iterable
 from typing import Dict
 
 from django.db import models
@@ -104,7 +105,7 @@ class ModelExporter(ModelMixin):
 
     def get_start_row(self):
         """TODO: return dynamically depending on headers rows count"""
-        return 3
+        return 4
 
     def export(self, qo: [QuerySet, Model], export_writer: ExporterWriter, row=None):
         """
@@ -115,6 +116,9 @@ class ModelExporter(ModelMixin):
         return_shift = Shift()
         row = row or self.get_start_row()
         col = self._col_start
+        if not isinstance(qo, Iterable):
+            qo = [qo]
+
         objects_count = len(qo)
         i = 0
         for obj in qo:
@@ -189,3 +193,19 @@ class ModelExporter(ModelMixin):
     def increase_end_col(self, shift_col):
         """TODO: name"""
         self._col_end += shift_col
+
+    def export_header(self, exporter_writer: ExporterWriter, row=1, col=None):
+        col = col or self._col_start
+        for _ in range(self.get_number()):
+            for field in self.fields:
+                value = self.get_model_field_verbose_name(field)
+                exporter_writer.write(x=col, y=row, value=value)
+                col += 1
+
+        for name, nested_exporter in self.nested_exporters.items():
+            nested_row = row + 1
+            value = self.get_model_field_verbose_name(name)
+            exporter_writer.write(x=nested_exporter._col_start, y=row, value=value)
+            col = nested_exporter.export_header(exporter_writer, row=nested_row)
+
+        return col

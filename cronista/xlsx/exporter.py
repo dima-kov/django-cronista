@@ -11,3 +11,4 @@ class XlsxModelExporter(ModelExporter, BaseExporter):
 
     def export(self, qs):
         super().export(qs, self.exporter_writer)
+        self.export_header(self.exporter_writer)
