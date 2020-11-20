@@ -88,7 +88,7 @@ class ModelExporter(ModelMixin):
 
     def export(self, qs: [QuerySet, list], export_writer: ExporterWriter, row=None):
         """
-        :param qo: queryset, list or object
+        :param qs: queryset or list ob objects
         :param export_writer: object that implements ExporterWriter interface and allows to write
         :param row:
         """
