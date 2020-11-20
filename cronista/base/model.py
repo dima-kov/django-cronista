@@ -147,7 +147,7 @@ class ModelExporter(ModelMixin):
     def export_obj(self, obj, export_writer: ExporterWriter, start_col, row):
         col = start_col
         for field in self.fields:
-            value = getattr(obj, field)
+            value = self.get_field_value(obj, field)
             export_writer.write(x=col, y=row, value=value)
             col += 1
 
@@ -169,6 +169,14 @@ class ModelExporter(ModelMixin):
             return_shift += shift
 
         return col, return_shift
+
+    def get_field_value(self, obj, field_name: str):
+        display_attr = f'get_{field_name}_display'
+        is_choice = hasattr(obj, display_attr)
+        if is_choice:
+            return getattr(obj, display_attr)()
+
+        return getattr(obj, field_name)
 
     def _export_nested(self, field_name: str, obj, exporter: 'ModelExporter', export_writer: ExporterWriter, col: int,
                        row: int):
