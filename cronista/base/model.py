@@ -65,7 +65,7 @@ class ModelExporter(ModelMixin):
         """
         size = len(self.fields)
         for exporter in self.nested_exporters.values():
-            size += exporter.get_size()
+            size += exporter.get_one_size()
 
         return size
 
