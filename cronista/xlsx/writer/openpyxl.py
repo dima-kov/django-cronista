@@ -44,7 +44,8 @@ class OpenPyXlWriter(ExporterWriter):
 
     def write(self, x, y, value):
         value = value or self.default_value
-        self.ws.cell(row=y, column=x, value=str(value))
+        cell = self.ws.cell(row=y, column=x)
+        cell.value = str(value)
 
     def move_left(self, x_from, steps):
         print('move!!!', x_from, steps)
@@ -80,7 +81,12 @@ class OpenPyXlWriter(ExporterWriter):
                 )
 
     def merge_range(self, min_col, min_row, max_col, max_row):
-        pass
+        self.ws.merge_cells(
+            start_row=min_row,
+            start_column=min_col,
+            end_row=max_row,
+            end_column=max_col,
+        )
 
     def freeze_panes(self, col, row):
         cell = self.ws.cell(row=row, column=col)
