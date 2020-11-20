@@ -85,6 +85,16 @@ class ModelExporter(ModelMixin):
 
         return size
 
+    def get_one_size(self):
+        """
+        Returns number of columns that will be done for one object
+        """
+        size = len(self.fields)
+        for exporter in self.nested_exporters.values():
+            size += exporter.get_size()
+
+        return size
+
     # def get_real_size(self):
     #     """
     #     Returns number of columns to be exported by exporter including nested exporter fields
@@ -130,8 +140,8 @@ class ModelExporter(ModelMixin):
             is_not_last_object = objects_count != i
             if self.state == self.HORIZONTAL:
                 if col + 1 > self._col_end and is_not_last_object:
-                    shift_col = self.get_size()
-                    export_writer.move_left(self._col_end + 1, shift_col)
+                    shift_col = self.get_one_size()
+                    export_writer.move_left(self._col_end, shift_col)
                     self.increase_end_col(shift_col)
                     self._number += 1
                     return_shift.increase_col(shift_col)
@@ -153,6 +163,7 @@ class ModelExporter(ModelMixin):
 
         return_shift = Shift()
         shift = Shift()
+        vertical_duplicate = None
         for name, nested_exporter in self.nested_exporters.items():
             if shift.col != 0:
                 nested_exporter.increase_end_col(shift.col)
@@ -167,6 +178,11 @@ class ModelExporter(ModelMixin):
             )
             print(f'Increase shift: {shift}, col={col}')
             return_shift += shift
+
+            if nested_exporter.state == ModelExporter.VERTICAL:
+                vertical_duplicate = nested_exporter
+
+        duplicate_near_vertical(row, vertical_duplicate, export_writer)
 
         return col, return_shift
 
@@ -218,3 +234,26 @@ class ModelExporter(ModelMixin):
             col = nested_exporter.export_header(exporter_writer, row=nested_row)
 
         return col
+
+
+def duplicate_near_vertical(row, exporter: ModelExporter, exporter_writer: ExporterWriter):
+    if not exporter:
+        return
+    # duplicate before
+    exporter_writer.duplicate_range(
+        min_col=1,
+        min_row=row,
+        max_col=exporter._col_start - 1,
+        max_row=row,
+        row_shift=1,
+    )
+
+    # duplicate after
+    # exporter_writer.duplicate_range()
+    exporter_writer.duplicate_range(
+        min_col=exporter._col_start + 1,
+        min_row=row,
+        max_col=None,
+        max_row=row,
+        row_shift=1,
+    )

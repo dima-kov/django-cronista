@@ -18,6 +18,14 @@ class ExporterWriter(abc.ABC):
         """
         raise NotImplementedError()
 
+    def duplicate_range(self, min_col, min_row, max_col, max_row, row_shift=0, col_shift=0):
+        """
+        Method should implement copying all values from range defined by
+        min_col, min_row, max_col, max_row
+        to the range of the same dimension but with shift on row or col
+        """
+        raise NotImplementedError()
+
     def to_response(self, filename='export'):
         raise NotImplementedError()
 

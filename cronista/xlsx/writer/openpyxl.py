@@ -52,7 +52,7 @@ class OpenPyXlWriter(ExporterWriter):
             f'min_col={x_from}',
             f'min_row=3',
             f'max_col={self.ws.max_column}',
-            f'max_row={self.ws.max_row}'
+            f'max_row={self.ws.max_row},\n\n'
         )
         max_col = self.ws.max_column
         if x_from > self.ws.max_column:
@@ -65,6 +65,19 @@ class OpenPyXlWriter(ExporterWriter):
             max_row=self.ws.max_row
         )
         self.ws.move_range(c, rows=0, cols=steps)
+
+    def duplicate_range(self, min_col, min_row, max_col, max_row, row_shift=0, col_shift=0):
+        if max_col is None:
+            max_col = self.ws.max_column
+
+        for row in range(min_row, max_row + 1):
+            for col in range(min_col, max_col + 1):
+                value = self.ws.cell(row=row, column=col).value
+                self.write(
+                    x=col + col_shift,
+                    y=row + row_shift,
+                    value=value,
+                )
 
     def to_file(self, filename='export'):
         self.wb.save(filename)
