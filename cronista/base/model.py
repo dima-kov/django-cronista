@@ -83,8 +83,10 @@ class ModelExporter(ModelMixin):
         self._col_end = self._col_start + self.get_size()
 
     def get_start_row(self):
-        """TODO: return dynamically depending on headers rows count"""
-        return 4
+        """
+        TODO: return dynamically depending on headers rows count
+        """
+        raise NotImplementedError()
 
     def export(self, qs: [QuerySet, list], export_writer: ExporterWriter, row=None):
         """

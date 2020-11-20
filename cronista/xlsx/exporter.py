@@ -1,4 +1,4 @@
-from cronista.base import ModelExporter, BaseExporter
+from cronista.base import ModelExporter, BaseExporter, ExporterWriter
 from cronista.xlsx.writer import OpenPyXlWriter
 
 
@@ -12,3 +12,7 @@ class XlsxModelExporter(ModelExporter, BaseExporter):
     def export(self, qs):
         super().export(qs, self.exporter_writer)
         self.export_header(self.exporter_writer)
+        self.export_header_after(self.exporter_writer)
+
+    def export_header_after(self, exporter_writer: ExporterWriter):
+        exporter_writer.freeze_panes(col=1, row=self.get_start_row())

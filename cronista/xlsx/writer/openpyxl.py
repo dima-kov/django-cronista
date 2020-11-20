@@ -79,6 +79,13 @@ class OpenPyXlWriter(ExporterWriter):
                     value=value,
                 )
 
+    def merge_range(self, min_col, min_row, max_col, max_row):
+        pass
+
+    def freeze_panes(self, col, row):
+        cell = self.ws.cell(row=row, column=col)
+        self.ws.freeze_panes = cell
+
     def to_file(self, filename='export'):
         self.wb.save(filename)
 

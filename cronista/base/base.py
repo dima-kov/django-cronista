@@ -26,6 +26,14 @@ class ExporterWriter(abc.ABC):
         """
         raise NotImplementedError()
 
+    def merge_range(self, min_col, min_row, max_col, max_row):
+        """Method should merge range"""
+        raise NotImplementedError()
+
+    def freeze_panes(self, col, row):
+        """Method should freeze range"""
+        raise NotImplementedError()
+
     def to_response(self, filename='export'):
         raise NotImplementedError()
 
