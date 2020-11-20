@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from cronista.base.model import Shift
+from cronista.base.shift import Shift
 
 
 class ShiftTestCase(TestCase):
