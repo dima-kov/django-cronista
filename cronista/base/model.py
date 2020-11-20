@@ -137,7 +137,8 @@ class ModelExporter(ModelMixin):
                     return_shift.increase_col(shift_col)
             elif self.state == self.VERTICAL:
                 col = self._col_start
-                return_shift.increase_row(1)
+                if is_not_last_object:
+                    return_shift.increase_row(1)
 
             row += return_shift.row
 
