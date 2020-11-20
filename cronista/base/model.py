@@ -95,17 +95,6 @@ class ModelExporter(ModelMixin):
 
         return size
 
-    # def get_real_size(self):
-    #     """
-    #     Returns number of columns to be exported by exporter including nested exporter fields
-    #     """
-    #     return self.get_static_size() * self.get_number()
-    #     # size = len(self.fields) * self.get_number()
-    # for exporter in self.nested_exporters.values():
-    #     size += exporter.get_size() * exporter.get_number()()`
-    #
-    # return size
-
     def set_start_end(self, col_start=1):
         """
         Sets start & end column
