@@ -239,21 +239,23 @@ class ModelExporter(ModelMixin):
 def duplicate_near_vertical(row, exporter: ModelExporter, exporter_writer: ExporterWriter):
     if not exporter:
         return
-    # duplicate before
-    exporter_writer.duplicate_range(
-        min_col=1,
-        min_row=row,
-        max_col=exporter._col_start - 1,
-        max_row=row,
-        row_shift=1,
-    )
 
-    # duplicate after
-    # exporter_writer.duplicate_range()
-    exporter_writer.duplicate_range(
-        min_col=exporter._col_start + 1,
-        min_row=row,
-        max_col=None,
-        max_row=row,
-        row_shift=1,
-    )
+    for i in range(exporter.get_number()):
+        # duplicate before
+        row_shift = i + 1
+        exporter_writer.duplicate_range(
+            min_col=1,
+            min_row=row,
+            max_col=exporter._col_start - 1,
+            max_row=row,
+            row_shift=row_shift,
+        )
+
+        # duplicate after
+        exporter_writer.duplicate_range(
+            min_col=exporter._col_start + 1,
+            min_row=row,
+            max_col=None,
+            max_row=row,
+            row_shift=row_shift,
+        )
