@@ -74,6 +74,9 @@ class OpenPyXlWriter(ExporterWriter):
         for row in range(min_row, max_row + 1):
             for col in range(min_col, max_col + 1):
                 value = self.ws.cell(row=row, column=col).value
+                if not value:
+                    continue
+
                 self.write(
                     x=col + col_shift,
                     y=row + row_shift,
