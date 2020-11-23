@@ -227,17 +227,17 @@ class ModelExporter(ModelMixin):
                 exporter_writer.write(x=col, y=row, value=value)
                 col += 1
 
-        for name, nested_exporter in self.nested_exporters.items():
-            value = self.get_model_field_verbose_name(name)
-            exporter_writer.write(x=nested_exporter._col_start, y=row, value=value)
-            exporter_writer.merge_range(
-                min_col=nested_exporter._col_start,
-                min_row=row,
-                max_col=nested_exporter._col_end-1,
-                max_row=row
-            )
+            for name, nested_exporter in self.nested_exporters.items():
+                value = self.get_model_field_verbose_name(name)
+                exporter_writer.write(x=nested_exporter._col_start, y=row, value=value)
+                exporter_writer.merge_range(
+                    min_col=nested_exporter._col_start,
+                    min_row=row,
+                    max_col=nested_exporter._col_end-1,
+                    max_row=row
+                )
 
-            col = nested_exporter.export_header(exporter_writer, row=row + 1)
+                col = nested_exporter.export_header(exporter_writer, row=row + 1)
 
         return col
 
