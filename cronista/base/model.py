@@ -1,9 +1,9 @@
 from typing import Dict
 
 from django.db import models
-from django.db.models import QuerySet
 
 from cronista.base import ExporterWriter
+from cronista.base.nested import NestedExporter
 from cronista.base.shift import Shift
 
 
@@ -29,131 +29,134 @@ class ModelExporter(ModelMixin):
     VERTICAL = 2
 
     fields = ()
-    nested_exporters: Dict[str, 'ModelExporter'] = {}
+    nested_exporters: Dict[str, 'NestedExporter'] = {}
     state = VERTICAL
 
     def __init__(self, *args, **kwargs):
         if self.model is None:
             raise NotImplementedError('Model must be specified')
 
-        self._col_start = None
-        self._col_end = None
-        self._number = 1
-        self.set_start_end()
-        super().__init__(*args, **kwargs)
+        # self._col_start = None
+        # self._col_end = None
+        # self._number = 1
+        # self.set_start_end()
+        # super().__init__(*args, **kwargs)
 
-    def get_number(self):
-        """
-        Returns how many times model exporter is placed on sheet
-        """
-        return self._number
+    # def get_number(self):
+    #     """
+    #     Returns how many times model exporter is placed on sheet
+    #     """
+    #     return self._number
+    #
+    # def increase_number(self):
+    #     """
+    #     Returns how many times model exporter is placed on sheet
+    #     """
+    #     self._number += 1
 
-    def increase_number(self):
-        """
-        Returns how many times model exporter is placed on sheet
-        """
-        self._number += 1
+    # def get_size(self):
+    #     """
+    #     Number of columns used by exporter
+    #     If there are 5 fields set and 2 objects - size is equal 10
+    #     """
+    #     size = len(self.fields) * self.get_number()
+    #     for exporter in self.nested_exporters.values():
+    #         size += exporter.get_size()
+    #
+    #     return size
 
-    def get_size(self):
+    @classmethod
+    def get_size(cls):
         """
-        Number of columns used by exporter
-        If there are 5 fields set and 2 objects - size is equal 10
+        Returns number of columns that will be done for one object
         """
-        size = len(self.fields) * self.get_number()
-        for exporter in self.nested_exporters.values():
+        size = len(cls.fields)
+        for exporter in cls.nested_exporters.values():
             size += exporter.get_size()
 
         return size
 
-    def get_one_size(self):
-        """
-        Returns number of columns that will be done for one object
-        """
-        size = len(self.fields)
-        for exporter in self.nested_exporters.values():
-            size += exporter.get_one_size()
+    # def set_start_end(self, col_start=1):
+    #     """
+    #     Sets start & end column
+    #     """
+    #     self._col_start = col_start
+    #     self._col_end = self._col_start + self.get_size()
 
-        return size
-
-    def set_start_end(self, col_start=1):
-        """
-        Sets start & end column
-        """
-        self._col_start = col_start
-        self._col_end = self._col_start + self.get_size()
-
-    def get_start_row(self):
+    @classmethod
+    def get_start_row(cls):
         """
         TODO: return dynamically depending on headers rows count
         """
         raise NotImplementedError()
 
-    def export(self, qs: [QuerySet, list], export_writer: ExporterWriter, row=None):
-        """
-        :param qs: queryset or list ob objects
-        :param export_writer: object that implements ExporterWriter interface and allows to write
-        :param row:
-        """
-        return_shift = Shift()
-        row = row or self.get_start_row()
-        col = self._col_start
+    # def export(self, qs: [QuerySet, list], export_writer: ExporterWriter, row=None):
+    #     """
+    #     :param qs: queryset or list ob objects
+    #     :param export_writer: object that implements ExporterWriter interface and allows to write
+    #     :param row:
+    #     """
+    #     return_shift = Shift()
+    #     row = row or self.get_start_row()
+    #     col = self._col_start
+    #
+    #     objects_number = len(qs)
+    #     objects_counter = 0
+    #     for obj in qs:
+    #         objects_counter += 1
+    #
+    #         col, shift = self.export_obj(obj, export_writer, col=col, row=row)
+    #         row += shift.row
+    #         return_shift += shift
+    #
+    #         if objects_number == objects_counter:
+    #             # this was the last object
+    #             continue
+    #
+    #         col, shift = self.after_object_shift(col, export_writer)
+    #         row += shift.row
+    #         return_shift += shift
+    #
+    #     return return_shift
+    #
+    # def after_object_shift(self, col, export_writer):
+    #     """
+    #     Determines how to export next object
+    #     should be called only if a next object exists
+    #
+    #     Horizontal:
+    #     if current column is same as end column, then
+    #         1. sheet needs to be moved left for number of columns needed for exporting one object
+    #         2. number of horizontal objects increased (self.increase_number())
+    #         3. end_col is increased for same number as in 1
+    #
+    #     Vertical:
+    #         1. move col to start
+    #         2. row is increased
+    #     """
+    #     return_shift = Shift()
+    #
+    #     if self.state == self.HORIZONTAL:
+    #         the_end = col == self._col_end
+    #         if the_end:
+    #             # there are no space more
+    #             cols = self.get_one_size()
+    #             export_writer.move_left(self._col_end, cols)
+    #             self.increase_end_col(cols)
+    #             self.increase_number()
+    #             return_shift.increase_col(cols)
+    #
+    #     elif self.state == self.VERTICAL:
+    #         col = self._col_start
+    #         return_shift.increase_row(1)
+    #
+    #     return col, return_shift
 
-        objects_number = len(qs)
-        objects_counter = 0
-        for obj in qs:
-            objects_counter += 1
-
-            col, shift = self.export_obj(obj, export_writer, col=col, row=row)
-            row += shift.row
-            return_shift += shift
-
-            if objects_number == objects_counter:
-                # this was the last object
-                continue
-
-            col, shift = self.after_object_shift(col, export_writer)
-            row += shift.row
-            return_shift += shift
-
-        return return_shift
-
-    def after_object_shift(self, col, export_writer):
-        """
-        Determines how to export next object
-        should be called only if a next object exists
-
-        Horizontal:
-        if current column is same as end column, then
-            1. sheet needs to be moved left for number of columns needed for exporting one object
-            2. number of horizontal objects increased (self.increase_number())
-            3. end_col is increased for same number as in 1
-
-        Vertical:
-            1. move col to start
-            2. row is increased
-        """
-        return_shift = Shift()
-
-        if self.state == self.HORIZONTAL:
-            the_end = col == self._col_end
-            if the_end:
-                # there are no space more
-                cols = self.get_one_size()
-                export_writer.move_left(self._col_end, cols)
-                self.increase_end_col(cols)
-                self.increase_number()
-                return_shift.increase_col(cols)
-
-        elif self.state == self.VERTICAL:
-            col = self._col_start
-            return_shift.increase_row(1)
-
-        return col, return_shift
-
-    def export_obj(self, obj, export_writer: ExporterWriter, col: int, row: int):
+    def export_obj(self, obj, export_writer: ExporterWriter, row: int):
         """
         Writes one object on the sheet
         """
+        col = self._col_start
         for field in self.fields:
             value = self.get_field_value(obj, field)
             export_writer.write(x=col, y=row, value=value)
@@ -184,7 +187,7 @@ class ModelExporter(ModelMixin):
 
         duplicate_near_exporter(row, vertical, vertical_objects, export_writer)
 
-        return col, return_shift
+        return return_shift
 
     def get_field_value(self, obj, field_name: str):
         display_attr = f'get_{field_name}_display'
