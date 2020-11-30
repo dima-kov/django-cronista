@@ -76,10 +76,13 @@ class NestedVertical(NestedExporter):
         :param export_writer: object that implements ExporterWriter interface and allows to write
         :param row:
         """
+        exporter = self.exporters[0]
         object_exporters = [
-            [obj, self.exporters[0]] for obj in qs
+            [obj, exporter] for obj in qs
         ]
-        return self.export_objects(object_exporters, export_writer, row=row)
+        shift = self.export_objects(object_exporters, export_writer, row=row)
+        duplicate_near_exporter(row, exporter, len(qs) - 1, export_writer)
+        return shift
 
     def export_objects(self, object_exporters: [[object, ModelExporter]], export_writer: ExporterWriter, row=None):
         return_shift = Shift()
@@ -90,6 +93,7 @@ class NestedVertical(NestedExporter):
             return_shift += shift
             self.shift_end_column(shift.col)
 
+        return_shift.increase_row(len(object_exporters))
         return return_shift
 
     def export_header(self, export_writer: ExporterWriter, row: int):
@@ -164,3 +168,34 @@ def nested_vertical(model_exporter_class: type(ModelExporter), column_start):
 
 def nested_horizontal(model_exporter_class: type(ModelExporter), column_start):
     return NestedHorizontal(exporter_class=model_exporter_class, column_start=column_start)
+
+
+def duplicate_near_exporter(row, exporter: ModelExporter, times: int, exporter_writer: ExporterWriter):
+    """
+    Copies all content near exporter to next rows
+    """
+    if not exporter:
+        return
+
+    if times < 2:
+        return
+
+    for i in range(times):
+        # duplicate before
+        row_shift = i + 1
+        exporter_writer.duplicate_range(
+            min_col=1,
+            min_row=row,
+            max_col=exporter.column_start - 1,
+            max_row=row,
+            row_shift=row_shift,
+        )
+
+        # duplicate after
+        exporter_writer.duplicate_range(
+            min_col=exporter.column_end + 1,
+            min_row=row,
+            max_col=None,
+            max_row=row,
+            row_shift=row_shift,
+        )

@@ -166,7 +166,6 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
         for name, nested in self.nested_exporters.items():
             nested.shift(return_shift.col)
             shift = self._export_nested(name, obj, nested, export_writer, row)
-            row += shift.row
             return_shift += shift
 
         self.shift_end_column(return_shift.col)
@@ -221,33 +220,3 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
 
     def export_header_after(self, exporter_writer: ExporterWriter):
         exporter_writer.freeze_panes(col=1, row=self.get_start_row())
-
-# def duplicate_near_exporter(row, exporter: ModelExporter, times: int, exporter_writer: ExporterWriter):
-#     """
-#     Copies all content near exporter to next rows
-#     """
-#     if not exporter:
-#         return
-#
-#     if times < 2:
-#         return
-#
-#     for i in range(times):
-#         # duplicate before
-#         row_shift = i + 1
-#         exporter_writer.duplicate_range(
-#             min_col=1,
-#             min_row=row,
-#             max_col=exporter._col_start - 1,
-#             max_row=row,
-#             row_shift=row_shift,
-#         )
-#
-#         # duplicate after
-#         exporter_writer.duplicate_range(
-#             min_col=exporter._col_start + 1,
-#             min_row=row,
-#             max_col=None,
-#             max_row=row,
-#             row_shift=row_shift,
-#         )
