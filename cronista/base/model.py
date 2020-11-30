@@ -123,7 +123,18 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
         else:
             return max([e.get_depth() for e in cls.related.values()]) + 1
 
+    def shift(self, columns_shift: int):
+        """
+        Performs shift of all nested exporters
+        """
+        super().shift(columns_shift)
+        for nested in self.nested_exporters.values():
+            nested.shift(columns_shift)
+
     def export(self, qs, exporter_writer):
+        """
+        Export entry point. Used only once for the first exporter
+        """
         row = self.get_start_row()
         shift = Shift()
         for obj in qs:
@@ -154,11 +165,6 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
         self.shift_end_column(return_shift.col)
         return return_shift
 
-    def shift(self, columns_shift: int):
-        super().shift(columns_shift)
-        for nested in self.nested_exporters.values():
-            nested.shift(columns_shift)
-
     def _export_nested(self, field_name: str, obj, nested_exporter: 'NestedExporter', export_writer: ExporterWriter,
                        row: int):
         model_field = self.get_model_field(field_name)
@@ -177,9 +183,7 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
             raise ValueError(f'Field {field_name} of type {type(model_field)} is '
                              f'not supported by exporter {nested_exporter.exporter_class.__class__.__name__}')
 
-        # print(nested_exporter, type(nested_exporter), nested_exporter.exporter_class)
-        shift = nested_exporter.export(qs=data, export_writer=export_writer, row=row)
-        return shift
+        return nested_exporter.export(qs=data, export_writer=export_writer, row=row)
 
     def get_field_value(self, obj, field_name: str):
         display_attr = f'get_{field_name}_display'
@@ -191,18 +195,12 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
 
     def export_header(self, exporter_writer: ExporterWriter, row=1):
         col = self.column_start
-        # print(f'Header of {self.__class__.__name__}')
-        # print(self.nested_exporters)
         for field in self.fields:
-            # print(f'    {field}')
             value = self.get_model_field_verbose_name(field)
             exporter_writer.write(x=col, y=row, value=value)
             col += 1
 
         for name, nested_exporter in self.nested_exporters.items():
-            # print(
-            #     f'    {nested_exporter.__class__.__name__} of ({name}) {nested_exporter.exporter_class.__class__.__name__}'
-            #     f' {nested_exporter.column_start}, y={row}')
             value = self.get_model_field_verbose_name(name)
             exporter_writer.write(x=nested_exporter.column_start, y=row, value=value)
             exporter_writer.merge_range(
@@ -212,7 +210,6 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
                 max_row=row
             )
 
-            # r = row + 1 if nested_exporter._is_vertical() else row
             nested_exporter.export_header(exporter_writer, row=row + 1)
 
 # def duplicate_near_exporter(row, exporter: ModelExporter, times: int, exporter_writer: ExporterWriter):
