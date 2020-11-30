@@ -83,6 +83,10 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
             nested.debug_structure()
 
     def init_nested(self):
+        """
+        Method creates objects of NestedVertical or NestedHorizontal
+        for related fields based on their exporters
+        """
         nested = {}
         col = self.column_start + self.get_fields_size()
         for name, exp in self.related.items():
@@ -93,6 +97,7 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
 
     @classmethod
     def get_fields_size(cls):
+        """Returns size of fields"""
         return len(cls.fields)
 
     @classmethod
@@ -108,10 +113,15 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
 
     @classmethod
     def get_start_row(cls):
-        """
-        TODO: return dynamically depending on headers rows count
-        """
-        raise NotImplementedError()
+        """Start from next row"""
+        return cls.get_depth() + 1
+
+    @classmethod
+    def get_depth(cls):
+        if cls.related == {}:
+            return 1
+        else:
+            return max([e.get_depth() for e in cls.related.values()]) + 1
 
     def export(self, qs, exporter_writer):
         row = self.get_start_row()
