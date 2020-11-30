@@ -135,6 +135,7 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
         """
         Export entry point. Used only once for the first exporter
         """
+        qs = self.annotate_qs(qs)
         row = self.get_start_row()
         shift = Shift()
         for obj in qs:
@@ -142,6 +143,12 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
             shift = self.export_obj(obj, exporter_writer, row=row)
             row += shift.row
             row += 1
+
+        self.export_header(exporter_writer)
+        self.export_header_after(exporter_writer)
+
+    def annotate_qs(self, qs):
+        return qs
 
     def export_obj(self, obj, export_writer: ExporterWriter, row: int):
         """
@@ -211,6 +218,9 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
             )
 
             nested_exporter.export_header(exporter_writer, row=row + 1)
+
+    def export_header_after(self, exporter_writer: ExporterWriter):
+        exporter_writer.freeze_panes(col=1, row=self.get_start_row())
 
 # def duplicate_near_exporter(row, exporter: ModelExporter, times: int, exporter_writer: ExporterWriter):
 #     """
