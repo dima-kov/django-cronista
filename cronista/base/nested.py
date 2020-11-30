@@ -14,7 +14,7 @@ class NestedExporter(ColumnWidthExporter):
         self.exporter_class: type(ModelExporter) = exporter_class
         self.exporters: [ModelExporter] = []
         super().__init__(*args, **kwargs)
-        self.new(from_start=True)
+        self.new()
 
     def get_number(self):
         """
@@ -25,13 +25,21 @@ class NestedExporter(ColumnWidthExporter):
     def get_size(self):
         return self.exporter_class.get_size() * self.get_number()
 
-    def new(self, from_start=False):
-        column = self.column_start if from_start else self.exporters[-1].column_end + 1
+    def new(self):
+        """
+        Method creates new object of export_class
+
+        If there are any exporter already:
+        - new exporter start_col will from the last object's end column;
+        - size of shift will be exporter size;
+        """
+        already_has = len(self.exporters) > 0
+        column = self.exporters[-1].column_end + 1 if already_has else self.column_start
         exporter: ModelExporter = self.exporter_class(column_start=column)
         self.exporters.append(exporter)
+
         shift_col = exporter.get_size()
-        print(shift_col, f'{from_start is True}')
-        if from_start is True:
+        if already_has is False:
             shift_col -= 1
         self.shift_end_column(shift_col)
         return shift_col
