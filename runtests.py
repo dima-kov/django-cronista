@@ -6,7 +6,7 @@ from django.core.management import execute_from_command_line
 
 
 def main(argv=None):
-    os.environ['DJANGO_SETTINGS_MODULE'] = 'cronista.tests.settings'
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'tests.settings'
     argv = argv or []
     execute_from_command_line(argv)
 
