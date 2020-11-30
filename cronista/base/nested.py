@@ -82,6 +82,7 @@ class NestedVertical(NestedExporter):
         ]
         shift = self.export_objects(object_exporters, export_writer, row=row)
         duplicate_near_exporter(row, exporter, len(qs) - 1, export_writer)
+        shift.increase_row(len(qs) - 1 if qs else 0)
         return shift
 
     def export_objects(self, object_exporters: [[object, ModelExporter]], export_writer: ExporterWriter, row=None):
@@ -93,7 +94,6 @@ class NestedVertical(NestedExporter):
             return_shift += shift
             self.shift_end_column(shift.col)
 
-        return_shift.increase_row(len(object_exporters))
         return return_shift
 
     def export_header(self, export_writer: ExporterWriter, row: int):
