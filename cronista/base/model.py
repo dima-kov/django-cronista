@@ -156,19 +156,28 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
 
         Returns shift - how col and row for next export object should be changed
         """
+
+        def shift_nested_after(_name, shift_col):
+            """Shifts all nested exporters after those with name `_name`"""
+            all_names = list(self.nested_exporters.keys())
+            current_index = all_names.index(_name)
+            to_shift_names = all_names[current_index + 1:]
+            [self.nested_exporters[_nested].shift(shift_col) for _nested in to_shift_names]
+
         col = self.column_start
         for field in self.fields:
             value = self.get_field_value(obj, field)
             export_writer.write(x=col, y=row, value=value)
             col += 1
 
-        return_shift, shift = Shift(), Shift()
+        return_shift = Shift()
         for name, nested in self.nested_exporters.items():
-            nested.shift(return_shift.col)
             shift = self._export_nested(name, obj, nested, export_writer, row)
             return_shift += shift
+            shift_nested_after(name, shift.col)
 
         self.shift_end_column(return_shift.col)
+
         return return_shift
 
     def _export_nested(self, field_name: str, obj, nested_exporter: 'NestedExporter', export_writer: ExporterWriter,
@@ -201,12 +210,17 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
 
     def export_header(self, exporter_writer: ExporterWriter, row=1):
         col = self.column_start
+        # print(f'{self.__class__.__name__}: {self.column_start} - {self.column_end}')
         for field in self.fields:
             value = self.get_model_field_verbose_name(field)
             exporter_writer.write(x=col, y=row, value=value)
             col += 1
 
         for name, nested_exporter in self.nested_exporters.items():
+            # print(
+            #     f'Nested: {nested_exporter.__class__.__name__} of {name}: '
+            #     f'{nested_exporter.column_start}, {nested_exporter.column_end} in {row} + 1'
+            # )
             value = self.get_model_field_verbose_name(name)
             exporter_writer.write(x=nested_exporter.column_start, y=row, value=value)
             exporter_writer.merge_range(

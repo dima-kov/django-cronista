@@ -130,14 +130,17 @@ class NestedHorizontal(NestedExporter):
         shift = self.export_objects(object_exporters, export_writer, row=row)
         return return_shift + shift
 
-    def export_objects(self, object_exporters: [[object, ModelExporter]], export_writer: ExporterWriter, row=None):
+    def export_objects(self, object_exporters: [[ModelExporter, object]], export_writer: ExporterWriter, row=None):
         return_shift = Shift()
-        shift = Shift()
+        i = 1
         for exporter, obj in object_exporters:
-            exporter.shift(shift.col)
             shift = exporter.export_obj(obj, export_writer, row=row)
             row += shift.row
             return_shift += shift
+
+            next_exporters = self.exporters[i:]
+            [exporter.shift(shift.col) for exporter in next_exporters]
+            i += 1
 
             self.shift_end_column(shift.col)
 
