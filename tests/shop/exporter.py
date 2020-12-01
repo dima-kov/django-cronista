@@ -1,5 +1,5 @@
 from cronista.base import ModelExporter
-from cronista.xlsx.exporter import Ready, XlsxModelExporter
+from cronista.xlsx.exporter import XlsxModelExporter
 from tests.shop.models import Shop, Product, ProductProperty
 
 
