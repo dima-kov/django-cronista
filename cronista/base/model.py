@@ -78,7 +78,7 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
         self.nested_exporters: Dict[str, 'NestedExporter'] = self.init_nested()
 
     def debug_structure(self):
-        # print(f'{self.__class__.__name__}: {self.column_start} - {self.column_end}')
+        print(f'{self.__class__.__name__}: {self.column_start} - {self.column_end}')
         for name, nested in self.nested_exporters.items():
             nested.debug_structure()
 

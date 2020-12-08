@@ -8,32 +8,6 @@ from openpyxl.writer.excel import save_virtual_workbook
 from cronista.base import ExporterWriter
 
 
-#
-# class _MaxColRow(object):
-#
-#     def __init__(self):
-#         self._max_col = 0
-#         self._max_row = 0
-#
-#     @property
-#     def max_col(self):
-#         return self._max_col
-#
-#     @max_col.setter
-#     def max_col(self, value):
-#         if value > self._max_col:
-#             self._max_col = value
-#
-#     @property
-#     def max_row(self):
-#         return self._max_row
-#
-#     @max_row.setter
-#     def max_row(self, value):
-#         if value > self._max_row:
-#             self._max_row = value
-
-
 class OpenPyXlWriter(ExporterWriter):
     default_value = '-'
 
@@ -48,13 +22,6 @@ class OpenPyXlWriter(ExporterWriter):
         cell.value = str(value)
 
     def move_left(self, x_from, steps):
-        print('move!!!', x_from, steps)
-        print(
-            f'min_col={x_from}',
-            f'min_row=3',
-            f'max_col={self.ws.max_column}',
-            f'max_row={self.ws.max_row},\n\n'
-        )
         max_col = self.ws.max_column
         if x_from > self.ws.max_column:
             max_col = x_from
