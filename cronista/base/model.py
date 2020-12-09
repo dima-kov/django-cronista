@@ -212,6 +212,14 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
         col = self.column_start
         # print(f'{self.__class__.__name__}: {self.column_start} - {self.column_end}')
         for field in self.fields:
+            depth = self.get_depth()
+            exporter_writer.merge_range(
+                min_col=col,
+                min_row=row,
+                max_col=col,
+                max_row=row + depth - 1 if depth > 1 else row
+            )
+
             value = self.get_model_field_verbose_name(field)
             exporter_writer.write(x=col, y=row, value=value)
             col += 1
