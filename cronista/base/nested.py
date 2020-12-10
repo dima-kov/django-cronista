@@ -81,7 +81,7 @@ class NestedVertical(NestedExporter):
             [obj, exporter] for obj in qs
         ]
         shift = self.export_objects(object_exporters, export_writer, row=row)
-        duplicate_near_exporter(row, exporter, len(qs) - 1, export_writer)
+        duplicate_near_exporter(row, exporter, len(qs), export_writer)
         shift.increase_row(len(qs) - 1 if qs else 0)
         return shift
 
@@ -99,9 +99,6 @@ class NestedVertical(NestedExporter):
     def export_header(self, export_writer: ExporterWriter, row: int):
         for exporter in self.exporters:
             exporter.export_header(exporter_writer=export_writer, row=row)
-
-    def _is_vertical(self):
-        return False
 
 
 class NestedHorizontal(NestedExporter):
@@ -160,9 +157,6 @@ class NestedHorizontal(NestedExporter):
     def export_header(self, export_writer: ExporterWriter, row: int):
         for exporter in self.exporters:
             exporter.export_header(exporter_writer=export_writer, row=row)
-
-    def _is_vertical(self):
-        return False
 
 
 def nested_vertical(model_exporter_class: type(ModelExporter), column_start):
