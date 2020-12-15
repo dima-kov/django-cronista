@@ -1,6 +1,7 @@
 from typing import Dict
 
 from django.db import models
+from django.db.models import DateField
 
 from cronista.base import ExporterWriter
 from cronista.base.shift import Shift
@@ -201,10 +202,23 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
         return nested_exporter.export(qs=data, export_writer=export_writer, row=row)
 
     def get_field_value(self, obj, field_name: str):
+        """
+        This field returns raw data that will be places into file
+
+        In future for better design, it should be split into separate class
+        to specify format, use choice, or override, etc
+        """
         display_attr = f'get_{field_name}_display'
         is_choice = hasattr(obj, display_attr)
         if is_choice:
             return getattr(obj, display_attr)()
+
+        field = self.get_model_field(field_name)
+        if isinstance(field, DateField):
+            date = getattr(obj, field_name)
+            if not date:
+                return
+            return date.strftime("%d.%m.%Y")
 
         return getattr(obj, field_name)
 
