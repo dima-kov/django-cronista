@@ -9,7 +9,7 @@ from cronista.base import ExporterWriter
 
 
 class OpenPyXlWriter(ExporterWriter):
-    default_value = '-'
+    default_value = ''
 
     def __init__(self):
         super().__init__()
