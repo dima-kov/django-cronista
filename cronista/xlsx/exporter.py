@@ -10,7 +10,7 @@ class ModelExporterWriter(ModelExporter, BaseExporter):
         super().__init__(exporter_writer=writer, column_start=1)
 
     def export(self, qs):
-        super().export(self.annotate_qs(qs), self.exporter_writer)
+        super().export(qs, self.exporter_writer)
 
 
 class XlsxModelExporter(ModelExporterWriter):
