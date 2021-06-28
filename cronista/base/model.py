@@ -1,30 +1,10 @@
 from typing import Dict
 
-from django.db import models
-from django.db.models import DateField
-
-from cronista.base import ExporterWriter
+from cronista.base import ExporterWriter, ModelReader, BaseExporter
 from cronista.base.shift import Shift
 
 
-class ModelMixin:
-    """
-    Mixin for setting model and dynamically getting field details
-    """
-    model: models.Model = None
-
-    def get_model_field_verbose_name(self, name):
-        field = self.get_model_field(name)
-        if isinstance(field, models.ManyToOneRel):
-            return field.related_model._meta.verbose_name_plural
-
-        return field.verbose_name
-
-    def get_model_field(self, name):
-        return self.model._meta.get_field(name)
-
-
-class ColumnWidthExporter(object):
+class ColumnWidthMixin(object):
 
     def __init__(self, column_start: int, *args, **kwargs):
         self.column_start = column_start
@@ -47,22 +27,15 @@ class ColumnWidthExporter(object):
         raise NotImplementedError()
 
 
-def init_nested(exporter: 'ModelExporter', start_col):
-    from cronista.base.nested import nested_vertical, nested_horizontal
-
-    if exporter.state == ModelExporter.HORIZONTAL:
-        return nested_horizontal(exporter, start_col)
-
-    elif exporter.state == ModelExporter.VERTICAL:
-        return nested_vertical(exporter, start_col)
-
-    else:
-        raise ValueError('Error')
-
-
-class ModelExporter(ColumnWidthExporter, ModelMixin):
+class ModelExporter(ColumnWidthMixin):
     """
     Class for exporting one object into sheet using exporter_writer
+
+    state - defines export direction: horizontal or vertical
+    fields - defines list of fields to export
+        exporter reads data from these fields and places data into appropriate cells
+    related - defines related exporters, e.g. for m2m objects, lists, nested dicts
+    model_reader - object, defining logic of reading field values from data (django qs, json, sqlAlchemy qs)
     """
     HORIZONTAL = 1
     VERTICAL = 2
@@ -70,18 +43,14 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
     fields = ()
     related: Dict[str, 'ModelExporter'] = {}
     state = VERTICAL
+    model_reader: ModelReader = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.model is None:
-            raise NotImplementedError('Model must be specified')
+        if self.model_reader is None:
+            raise NotImplementedError('Model reader must be specified')
 
         self.nested_exporters: Dict[str, 'NestedExporter'] = self.init_nested()
-
-    def debug_structure(self):
-        print(f'{self.__class__.__name__}: {self.column_start} - {self.column_end}')
-        for name, nested in self.nested_exporters.items():
-            nested.debug_structure()
 
     def init_nested(self):
         """
@@ -132,14 +101,14 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
         for nested in self.nested_exporters.values():
             nested.shift(columns_shift)
 
-    def export(self, qs, exporter_writer):
+    def export(self, objects, exporter_writer=None):
         """
         Export entry point. Used only once for the first exporter
         """
-        qs = self.annotate_qs(qs)
+        objects = self.annotate_qs(objects)
         row = self.get_start_row()
         shift = Shift()
-        for obj in qs:
+        for obj in objects:
             self.shift_end_column(shift.col)
             shift = self.export_obj(obj, exporter_writer, row=row)
             row += shift.row
@@ -183,22 +152,7 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
 
     def _export_nested(self, field_name: str, obj, nested_exporter: 'NestedExporter', export_writer: ExporterWriter,
                        row: int):
-        model_field = self.get_model_field(field_name)
-        is_m2o = isinstance(model_field, models.ManyToOneRel)  # related fks
-        is_m2m = isinstance(model_field, models.ManyToManyField)
-        is_o2o = isinstance(model_field, models.OneToOneField)
-        is_fk = isinstance(model_field, models.ForeignKey)
-
-        if is_m2o or is_m2m:
-            field = getattr(obj, field_name)
-            data = getattr(field, 'all')()
-        elif is_o2o or is_fk:
-            obj = getattr(obj, field_name)
-            data = [obj]  # fake qs
-        else:
-            raise ValueError(f'Field {field_name} of type {type(model_field)} is '
-                             f'not supported by exporter {nested_exporter.exporter_class.__class__.__name__}')
-
+        data = self.model_reader.get_related_field_value(obj, field_name)
         return nested_exporter.export(qs=data, export_writer=export_writer, row=row)
 
     def get_field_value(self, obj, field_name: str):
@@ -208,23 +162,10 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
         In future for better design, it should be split into separate class
         to specify format, use choice, or override, etc
         """
-        display_attr = f'get_{field_name}_display'
-        is_choice = hasattr(obj, display_attr)
-        if is_choice:
-            return getattr(obj, display_attr)()
-
-        field = self.get_model_field(field_name)
-        if isinstance(field, DateField):
-            date = getattr(obj, field_name)
-            if not date:
-                return
-            return date.strftime("%d.%m.%Y")
-
-        return getattr(obj, field_name)
+        return self.model_reader.get_field_value(obj, field_name)
 
     def export_header(self, exporter_writer: ExporterWriter, row=1):
         col = self.column_start
-        # print(f'{self.__class__.__name__}: {self.column_start} - {self.column_end}')
         for field in self.fields:
             depth = self.get_depth()
             exporter_writer.merge_range(
@@ -234,7 +175,7 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
                 max_row=row + depth - 1 if depth > 1 else row
             )
 
-            value = self.get_model_field_verbose_name(field)
+            value = self.model_reader.get_field_name(field)
             exporter_writer.write(x=col, y=row, value=value)
             col += 1
 
@@ -243,7 +184,7 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
             #     f'Nested: {nested_exporter.__class__.__name__} of {name}: '
             #     f'{nested_exporter.column_start}, {nested_exporter.column_end} in {row} + 1'
             # )
-            value = self.get_model_field_verbose_name(name)
+            value = self.model_reader.get_field_name(name)
             exporter_writer.write(x=nested_exporter.column_start, y=row, value=value)
             exporter_writer.merge_range(
                 min_col=nested_exporter.column_start,
@@ -256,3 +197,32 @@ class ModelExporter(ColumnWidthExporter, ModelMixin):
 
     def export_header_after(self, exporter_writer: ExporterWriter):
         exporter_writer.freeze_panes(col=1, row=self.get_start_row())
+
+    def debug_structure(self):
+        print(f'{self.__class__.__name__}: {self.column_start} - {self.column_end}')
+        for name, nested in self.nested_exporters.items():
+            nested.debug_structure()
+
+
+class ModelExporterWriter(ModelExporter, BaseExporter):
+    writer_class = None
+
+    def __init__(self):
+        writer = self.writer_class()
+        super().__init__(exporter_writer=writer, column_start=1)
+
+    def export(self, qs):
+        super().export(qs, self.exporter_writer)
+
+
+def init_nested(exporter: 'ModelExporter', start_col):
+    from cronista.base.nested import nested_vertical, nested_horizontal
+
+    if exporter.state == ModelExporter.HORIZONTAL:
+        return nested_horizontal(exporter, start_col)
+
+    elif exporter.state == ModelExporter.VERTICAL:
+        return nested_vertical(exporter, start_col)
+
+    else:
+        raise ValueError('Error')
