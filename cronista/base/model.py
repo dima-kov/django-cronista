@@ -63,6 +63,11 @@ def init_nested(exporter: 'ModelExporter', start_col):
 class ModelExporter(ColumnWidthExporter, ModelMixin):
     """
     Class for exporting one object into sheet using exporter_writer
+
+    state - defines export direction: horizontal or vertical
+    fields - defines list of fields to export
+        exporter reads data from these fields and places data into appropriate cells
+    related - defines related exporters, e.g. for m2m objects, lists, nested dicts
     """
     HORIZONTAL = 1
     VERTICAL = 2
