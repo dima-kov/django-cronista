@@ -54,3 +54,21 @@ class BaseExporter(abc.ABC):
 
     def as_file(self, filename=None):
         return self.exporter_writer.to_file(filename)
+
+
+class ModelReader(object):
+    """
+    All logic reading data from models, e.g. django model, pydantic model, etc
+    """
+
+    def __init__(self, model=None):
+        self.model = model
+
+    def get_field_name(self, field_name: str):
+        raise NotImplementedError()
+
+    def get_field_value(self, obj, field_name: str):
+        raise NotImplementedError()
+
+    def get_related_field_value(self, obj, field_name: str):
+        raise NotImplementedError()

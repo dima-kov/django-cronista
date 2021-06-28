@@ -1,11 +1,11 @@
 from django.db.models import QuerySet
 
 from cronista.base import ModelExporter, ExporterWriter
-from cronista.base.model import ColumnWidthExporter
+from cronista.base.model import ColumnWidthMixin
 from cronista.base.shift import Shift
 
 
-class NestedExporter(ColumnWidthExporter):
+class NestedExporter(ColumnWidthMixin):
     """
     Class defines logic for exporting queryset
     """
