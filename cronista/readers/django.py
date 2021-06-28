@@ -43,7 +43,7 @@ class DjangoModelReader(ModelReader):
             data = [obj]  # fake qs
         else:
             raise ValueError(f'Field {field_name} of type {type(model_field)} is '
-                             f'not supported by mode reader {self.__class__.__name__}')
+                             f'not supported by model reader {self.__class__.__name__}')
 
         return data
 
