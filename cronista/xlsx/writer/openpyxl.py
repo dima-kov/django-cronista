@@ -65,6 +65,9 @@ class OpenPyXlWriter(ExporterWriter):
     def to_file(self, filename='export'):
         self.wb.save(filename)
 
+    def to_binary(self):
+        return save_virtual_workbook(self.wb)
+
     def to_response(self, filename='export'):
         filename = quote('{}.xlsx'.format(filename))
         response = HttpResponse(

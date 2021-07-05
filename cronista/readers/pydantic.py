@@ -9,7 +9,10 @@ class PydanticModelReader(ModelReader):
         return self._get_model_field(field_name).field_info.title
 
     def get_field_value(self, obj, field_name: str):
-        return obj[field_name]
+        try:
+            return obj[field_name]
+        except KeyError:
+            return None
 
     def get_related_field_value(self, obj, field_name: str):
         value = self.get_field_value(obj, field_name)

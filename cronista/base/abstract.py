@@ -40,6 +40,9 @@ class ExporterWriter(abc.ABC):
     def to_file(self, filename='export'):
         raise NotImplementedError()
 
+    def to_binary(self):
+        raise NotImplementedError()
+
 
 class BaseExporter(abc.ABC):
 
@@ -54,6 +57,9 @@ class BaseExporter(abc.ABC):
 
     def as_file(self, filename=None):
         return self.exporter_writer.to_file(filename)
+
+    def as_binary(self):
+        return self.exporter_writer.to_binary()
 
 
 class ModelReader(object):
