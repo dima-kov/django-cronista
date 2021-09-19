@@ -1,6 +1,10 @@
+import random
+
 from django.test import TestCase
 
 from tests.shop.exporter import ShopExporter, ProductExporter, ProductPropertyExporter
+from tests.shop.models import Shop
+from tests.shop.tests.factory import ShopFactory, ProductFactory, ProductPropertyFactory
 
 
 class NestedTestCase(TestCase):
@@ -67,3 +71,22 @@ class NestedWithNewTestCase(TestCase):
         self.assertEqual(col_shift, 5)
         self._assert_products(3, 12, number=2)
         self._assert_shop(1, 7)
+
+
+class ShopExporterWithData(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.exporter = ShopExporter()
+        cls._new_shop()
+        cls._new_shop()
+
+    @classmethod
+    def _new_shop(cls, product_n=2, product_properties_n_max=3):
+        shop = ShopFactory()
+        products = ProductFactory.create_batch(size=product_n, shop=shop)
+        for p in products:
+            [ProductPropertyFactory(product=p) for _ in range(random.randint(0, product_properties_n_max))]
+
+    def test(self):
+        self.exporter.export(Shop.objects.all())
+        self.exporter.as_file('fff.xlsx')
